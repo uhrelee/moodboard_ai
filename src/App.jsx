@@ -13,8 +13,7 @@ export default function App() {
     try {
       return {
         gemini: localStorage.getItem('era_gemini_key') || '',
-        google: localStorage.getItem('era_google_key') || '',
-        googleCx: localStorage.getItem('era_google_cx') || '',
+        unsplash: localStorage.getItem('era_unsplash_key') || '',
       }
     } catch { return { gemini: '', google: '', googleCx: '' } }
   })
@@ -25,12 +24,11 @@ export default function App() {
     setApiKeys(keys)
     try {
       localStorage.setItem('era_gemini_key', keys.gemini)
-      localStorage.setItem('era_google_key', keys.google)
-      localStorage.setItem('era_google_cx', keys.googleCx)
+      localStorage.setItem('era_unsplash_key', keys.unsplash)
     } catch {}
   }
 
-  const hasKeys = apiKeys.gemini && apiKeys.google && apiKeys.googleCx
+  const hasKeys = apiKeys.gemini && apiKeys.unsplash
 
   const generateMoodboard = async (input) => {
     setEraInput(input)
@@ -52,7 +50,7 @@ export default function App() {
 
     try {
       const geminiData = await callGemini(input, apiKeys.gemini)
-      const imageResults = await searchImages(geminiData.imageQueries, apiKeys.google, apiKeys.googleCx)
+      const imageResults = await searchImages(geminiData.imageQueries, apiKeys.unsplash)
       clearInterval(interval)
       setMoodboardData(geminiData)
       setImages(imageResults)
@@ -167,23 +165,23 @@ Be specific to the actual subject. If it's a sports team, adapt the fields accor
   }
 }
 
-async function searchImages(queries, googleKey, cx) {
+async function searchImages(queries, unsplashKey) {
   const results = []
   const toSearch = queries?.slice(0, 5) || []
 
   for (const query of toSearch) {
     try {
       const res = await fetch(
-        `https://www.googleapis.com/customsearch/v1?key=${googleKey}&cx=${cx}&q=${encodeURIComponent(query)}&searchType=image&num=3&imgSize=large&safe=active`
+        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=4&orientation=landscape`,
+        { headers: { Authorization: `Client-ID ${unsplashKey}` } }
       )
       if (!res.ok) continue
       const data = await res.json()
-      const items = data.items || []
-      items.forEach(item => {
+      data.results?.forEach(photo => {
         results.push({
-          url: item.link,
-          thumb: item.image?.thumbnailLink || item.link,
-          title: item.title,
+          url: photo.urls.regular,
+          thumb: photo.urls.small,
+          title: photo.alt_description || query,
           query,
         })
       })

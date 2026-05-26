@@ -45,20 +45,12 @@ export default function ApiSetup({ apiKeys, onSave }) {
             placeholder="AIza..."
           />
           <KeyField
-            label="Google Custom Search API Key"
-            hint={<>Free at <a href="https://console.cloud.google.com" target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'underline' }}>console.cloud.google.com</a> — enable Custom Search API</>}
-            value={keys.google}
-            onChange={v => setKeys(k => ({ ...k, google: v }))}
+            label="Unsplash Access Key"
+            hint={<>Free at <a href="https://unsplash.com/developers" target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'underline' }}>unsplash.com/developers</a></>}
+            value={keys.unsplash}
+            onChange={v => setKeys(k => ({ ...k, unsplash: v }))}
             show={show}
-            placeholder="AIza..."
-          />
-          <KeyField
-            label="Custom Search Engine ID (cx)"
-            hint={<>Create at <a href="https://programmablesearchengine.google.com" target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'underline' }}>programmablesearchengine.google.com</a> — set to search the whole web</>}
-            value={keys.googleCx}
-            onChange={v => setKeys(k => ({ ...k, googleCx: v }))}
-            show={show}
-            placeholder="12345abc..."
+            placeholder="your-unsplash-access-key"
           />
         </div>
 
