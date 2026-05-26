@@ -142,7 +142,7 @@ Be specific to the actual subject. If it's a sports team, adapt accordingly (rep
       'Authorization': `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'meta-llama/llama-3.1-8b-instruct:free',
+      model: 'meta-llama/llama-3.3-70b-instruct:free',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 2000,
     })
