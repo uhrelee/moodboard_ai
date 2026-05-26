@@ -73,5 +73,8 @@ This app is a prototype of the **personalization layer** of an AI OS:
 - "I'm in my X era" is an identity signal the OS would ingest passively
 - The moodboard IS the dynamic environment — what your device would look/feel like if it reflected who you are right now
 - Proactive personalization: the OS notices you've been in this era and adapts
+<<<<<<< HEAD
 # moodboard_ai
 # moodboard_ai
+=======
+>>>>>>> ab1baba (reinitialize project with new files)

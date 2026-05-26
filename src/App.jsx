@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { useState, useEffect, useRef } from 'react'
+=======
+import { useState } from 'react'
+>>>>>>> ab1baba (reinitialize project with new files)
 import LandingScreen from './components/LandingScreen'
 import MoodboardScreen from './components/MoodboardScreen'
 import LoadingScreen from './components/LoadingScreen'
@@ -15,7 +19,11 @@ export default function App() {
         gemini: localStorage.getItem('era_gemini_key') || '',
         unsplash: localStorage.getItem('era_unsplash_key') || '',
       }
+<<<<<<< HEAD
     } catch { return { gemini: '', google: '', googleCx: '' } }
+=======
+    } catch { return { gemini: '', unsplash: '' } }
+>>>>>>> ab1baba (reinitialize project with new files)
   })
   const [loadingMessage, setLoadingMessage] = useState('')
   const [error, setError] = useState('')
@@ -28,7 +36,11 @@ export default function App() {
     } catch {}
   }
 
+<<<<<<< HEAD
   const hasKeys = apiKeys.gemini && apiKeys.unsplash
+=======
+  const hasKeys = !!(apiKeys.gemini && apiKeys.unsplash)
+>>>>>>> ab1baba (reinitialize project with new files)
 
   const generateMoodboard = async (input) => {
     setEraInput(input)
@@ -110,12 +122,18 @@ Respond ONLY with a valid JSON object, no markdown, no backticks, exactly this s
   "font": "serif",
   "imageQueries": [
     "Harry Styles Harry's House album 2022",
+<<<<<<< HEAD
     "Harry Styles As It Was photoshoot",
     "cottagecore aesthetic warm tones interior",
     "vintage 70s warm living room aesthetic",
     "Harry Styles concert tour 2022 outfits",
     "sunlit kitchen botanical aesthetic",
     "Harry Styles Coachella 2022",
+=======
+    "cottagecore aesthetic warm tones interior",
+    "vintage 70s warm living room aesthetic",
+    "sunlit kitchen botanical aesthetic",
+>>>>>>> ab1baba (reinitialize project with new files)
     "warm honey golden hour photography aesthetic"
   ],
   "tracklistMoods": [
@@ -136,7 +154,11 @@ Respond ONLY with a valid JSON object, no markdown, no backticks, exactly this s
   "fanArchetype": "The Tender Maximalist — you collect things that matter, you cry at chord progressions, you make places feel like home"
 }
 
+<<<<<<< HEAD
 Be specific to the actual subject. If it's a sports team, adapt the fields accordingly (replace tracks with key moments/games, replace artists with similar team vibes). If it's a video game, adapt for that world. The fields should feel authentic to the fandom.`
+=======
+Be specific to the actual subject. If it's a sports team, adapt accordingly (replace tracks with key moments/games, replace artists with similar team vibes). If it's a video game, adapt for that world.`
+>>>>>>> ab1baba (reinitialize project with new files)
 
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
     method: 'POST',
