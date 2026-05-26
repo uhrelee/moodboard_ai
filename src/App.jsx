@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { useState, useEffect, useRef } from 'react'
-=======
 import { useState } from 'react'
->>>>>>> ab1baba (reinitialize project with new files)
 import LandingScreen from './components/LandingScreen'
 import MoodboardScreen from './components/MoodboardScreen'
 import LoadingScreen from './components/LoadingScreen'
@@ -16,14 +12,10 @@ export default function App() {
   const [apiKeys, setApiKeys] = useState(() => {
     try {
       return {
-        gemini: localStorage.getItem('era_gemini_key') || '',
+        llama: localStorage.getItem('era_llama_key') || '',
         unsplash: localStorage.getItem('era_unsplash_key') || '',
       }
-<<<<<<< HEAD
-    } catch { return { gemini: '', google: '', googleCx: '' } }
-=======
-    } catch { return { gemini: '', unsplash: '' } }
->>>>>>> ab1baba (reinitialize project with new files)
+    } catch { return { llama: '', unsplash: '' } }
   })
   const [loadingMessage, setLoadingMessage] = useState('')
   const [error, setError] = useState('')
@@ -31,16 +23,12 @@ export default function App() {
   const saveKeys = (keys) => {
     setApiKeys(keys)
     try {
-      localStorage.setItem('era_gemini_key', keys.gemini)
+      localStorage.setItem('era_llama_key', keys.llama)
       localStorage.setItem('era_unsplash_key', keys.unsplash)
     } catch {}
   }
 
-<<<<<<< HEAD
-  const hasKeys = apiKeys.gemini && apiKeys.unsplash
-=======
-  const hasKeys = !!(apiKeys.gemini && apiKeys.unsplash)
->>>>>>> ab1baba (reinitialize project with new files)
+  const hasKeys = !!(apiKeys.llama && apiKeys.unsplash)
 
   const generateMoodboard = async (input) => {
     setEraInput(input)
@@ -61,10 +49,10 @@ export default function App() {
     }, 1800)
 
     try {
-      const geminiData = await callGemini(input, apiKeys.gemini)
-      const imageResults = await searchImages(geminiData.imageQueries, apiKeys.unsplash)
+      const llamaData = await callAI(input, apiKeys.llama)
+      const imageResults = await searchImages(llamaData.imageQueries, apiKeys.unsplash)
       clearInterval(interval)
-      setMoodboardData(geminiData)
+      setMoodboardData(llamaData)
       setImages(imageResults)
       setScreen('moodboard')
     } catch (err) {
@@ -98,7 +86,7 @@ export default function App() {
   )
 }
 
-async function callGemini(input, apiKey) {
+async function callAI(input, apiKey) {
   const prompt = `You are an AI that creates deeply personal, culturally rich era moodboards. The user has typed: "${input}"
 
 Extract the subject (artist, album, show, game, team, era, vibe) and generate a rich moodboard profile.
@@ -122,18 +110,9 @@ Respond ONLY with a valid JSON object, no markdown, no backticks, exactly this s
   "font": "serif",
   "imageQueries": [
     "Harry Styles Harry's House album 2022",
-<<<<<<< HEAD
-    "Harry Styles As It Was photoshoot",
-    "cottagecore aesthetic warm tones interior",
-    "vintage 70s warm living room aesthetic",
-    "Harry Styles concert tour 2022 outfits",
-    "sunlit kitchen botanical aesthetic",
-    "Harry Styles Coachella 2022",
-=======
     "cottagecore aesthetic warm tones interior",
     "vintage 70s warm living room aesthetic",
     "sunlit kitchen botanical aesthetic",
->>>>>>> ab1baba (reinitialize project with new files)
     "warm honey golden hour photography aesthetic"
   ],
   "tracklistMoods": [
@@ -154,28 +133,28 @@ Respond ONLY with a valid JSON object, no markdown, no backticks, exactly this s
   "fanArchetype": "The Tender Maximalist — you collect things that matter, you cry at chord progressions, you make places feel like home"
 }
 
-<<<<<<< HEAD
-Be specific to the actual subject. If it's a sports team, adapt the fields accordingly (replace tracks with key moments/games, replace artists with similar team vibes). If it's a video game, adapt for that world. The fields should feel authentic to the fandom.`
-=======
 Be specific to the actual subject. If it's a sports team, adapt accordingly (replace tracks with key moments/games, replace artists with similar team vibes). If it's a video game, adapt for that world.`
->>>>>>> ab1baba (reinitialize project with new files)
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${apiKey}`, {
+  const res = await fetch(`https://openrouter.ai/api/v1/chat/completions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.85, maxOutputTokens: 2000 }
+      model: 'meta-llama/llama-3.1-8b-instruct:free',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 2000,
     })
   })
 
   if (!res.ok) {
     const err = await res.json()
-    throw new Error(`Gemini error: ${err.error?.message || res.status}`)
+    throw new Error(`AI error: ${err.error?.message || res.status}`)
   }
 
   const data = await res.json()
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+  const text = data.choices?.[0]?.message?.content || ''
   const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
 
   try {
@@ -183,7 +162,7 @@ Be specific to the actual subject. If it's a sports team, adapt accordingly (rep
   } catch {
     const match = cleaned.match(/\{[\s\S]*\}/)
     if (match) return JSON.parse(match[0])
-    throw new Error('Could not parse Gemini response')
+    throw new Error('Could not parse AI response')
   }
 }
 
