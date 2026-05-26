@@ -74,3 +74,4 @@ This app is a prototype of the **personalization layer** of an AI OS:
 - The moodboard IS the dynamic environment — what your device would look/feel like if it reflected who you are right now
 - Proactive personalization: the OS notices you've been in this era and adapts
 # moodboard_ai
+# moodboard_ai
