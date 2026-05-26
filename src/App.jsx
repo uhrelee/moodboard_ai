@@ -160,7 +160,7 @@ Be specific to the actual subject. If it's a sports team, adapt the fields accor
 Be specific to the actual subject. If it's a sports team, adapt accordingly (replace tracks with key moments/games, replace artists with similar team vibes). If it's a video game, adapt for that world.`
 >>>>>>> ab1baba (reinitialize project with new files)
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
