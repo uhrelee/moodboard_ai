@@ -1,193 +1,231 @@
-import { useState } from 'react'
-import LandingScreen from './components/LandingScreen'
-import MoodboardScreen from './components/MoodboardScreen'
-import LoadingScreen from './components/LoadingScreen'
-import ApiSetup from './components/ApiSetup'
+import React from 'react'
+import './index.css'
 
-export default function App() {
-  const [screen, setScreen] = useState('landing')
-  const [eraInput, setEraInput] = useState('')
-  const [moodboardData, setMoodboardData] = useState(null)
-  const [images, setImages] = useState([])
-  const [apiKeys, setApiKeys] = useState(() => {
-    try {
-      return {
-        llama: localStorage.getItem('era_llama_key') || '',
-        unsplash: localStorage.getItem('era_unsplash_key') || '',
-      }
-    } catch { return { llama: '', unsplash: '' } }
+export default function AuraApp() {
+  const [input, setInput] = React.useState('')
+  const [interests, setInterests] = React.useState(() => {
+    const saved = localStorage.getItem('aura_interests')
+    return saved ? JSON.parse(saved) : []
   })
-  const [loadingMessage, setLoadingMessage] = useState('')
-  const [error, setError] = useState('')
 
-  const saveKeys = (keys) => {
-    setApiKeys(keys)
-    try {
-      localStorage.setItem('era_llama_key', keys.llama)
-      localStorage.setItem('era_unsplash_key', keys.unsplash)
-    } catch {}
+  const [briefing, setBriefing] = React.useState(() => {
+    return localStorage.getItem('aura_briefing') || ''
+  })
+
+  const [loading, setLoading] = React.useState(false)
+
+  React.useEffect(() => {
+    localStorage.setItem('aura_interests', JSON.stringify(interests))
+  }, [interests])
+
+  React.useEffect(() => {
+    if (briefing) {
+      localStorage.setItem('aura_briefing', briefing)
+    }
+  }, [briefing])
+
+  const addInterest = () => {
+    if (!input.trim()) return
+    if (interests.length >= 5) return
+
+    setInterests([...interests, input.trim()])
+    setInput('')
   }
 
-  const hasKeys = !!(apiKeys.llama && apiKeys.unsplash)
+  const removeInterest = (index) => {
+    setInterests(interests.filter((_, i) => i !== index))
+  }
 
-  const generateMoodboard = async (input) => {
-    setEraInput(input)
-    setScreen('loading')
-    setError('')
+  const generateBriefing = async () => {
+    setLoading(true)
 
-    const messages = [
-      'Reading the energy...',
-      'Feeling the aesthetic...',
-      'Pulling the vibes together...',
-      'Almost ready...',
-    ]
-    let i = 0
-    setLoadingMessage(messages[0])
-    const interval = setInterval(() => {
-      i = (i + 1) % messages.length
-      setLoadingMessage(messages[i])
-    }, 1800)
+    const prompt = `You are Aura, an emotionally intelligent AI cultural identity system.
+
+The user loves these things:
+${interests.map(i => `- ${i}`).join('\n')}
+
+Generate a DAILY VIBE BRIEFING.
+
+The tone should feel like:
+- early internet
+- Tumblr era emotional writing
+- poetic but concise
+- culturally observant
+- slightly futuristic
+
+Respond in this exact format:
+
+Today's energy:
+[1-2 sentence emotional summary]
+
+You're drawn toward worlds that are:
+- bullet
+- bullet
+- bullet
+
+Current aesthetic drift:
+[aesthetic phrase]
+
+Recommended:
+- Watch: something specific
+- Album: something specific
+- Stream vibe: something specific
+- Bonus obsession: something specific
+
+Keep it under 180 words.`
 
     try {
-      const llamaData = await callAI(input, apiKeys.llama)
-      const imageResults = await searchImages(llamaData.imageQueries, apiKeys.unsplash)
-      clearInterval(interval)
-      setMoodboardData(llamaData)
-      setImages(imageResults)
-      setScreen('moodboard')
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+        }),
+      })
+
+      const data = await res.json()
+      const text = data.choices?.[0]?.message?.content || 'Aura could not read your vibe today.'
+
+      setBriefing(text)
     } catch (err) {
-      clearInterval(interval)
-      setError(err.message || 'Something went wrong. Check your API keys.')
-      setScreen('landing')
+      setBriefing('Connection lost in the cultural ether. Try again.')
     }
+
+    setLoading(false)
+  }
+
+  const clearAura = () => {
+    localStorage.removeItem('aura_interests')
+    localStorage.removeItem('aura_briefing')
+    setInterests([])
+    setBriefing('')
   }
 
   return (
-    <div style={{ minHeight: '100vh' }}>
-      {!hasKeys && screen === 'landing' && (
-        <ApiSetup apiKeys={apiKeys} onSave={saveKeys} />
-      )}
-      {screen === 'landing' && hasKeys && (
-        <LandingScreen onGenerate={generateMoodboard} error={error} apiKeys={apiKeys} onEditKeys={saveKeys} />
-      )}
-      {screen === 'loading' && (
-        <LoadingScreen message={loadingMessage} era={eraInput} />
-      )}
-      {screen === 'moodboard' && moodboardData && (
-        <MoodboardScreen
-          data={moodboardData}
-          images={images}
-          era={eraInput}
-          onBack={() => setScreen('landing')}
-          onNew={(input) => generateMoodboard(input)}
-        />
-      )}
+    <div className="app">
+      <div className="topbar">
+        <div>◉ ◉ ◉</div>
+        <div>AURA.exe — cultural identity system</div>
+        <div>online</div>
+      </div>
+
+      <div className="container">
+        <div className="window">
+          <div className="window-header">
+            <h1>AURA</h1>
+            <p>build 2003</p>
+          </div>
+
+          <div className="content-grid">
+            <div>
+              <div className="panel blue-panel">
+                <p className="panel-title">enter 3–5 things you love</p>
+
+                <div className="input-row">
+                  <input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && addInterest()}
+                    placeholder="arcane, mitski, giants baseball..."
+                  />
+
+                  <button onClick={addInterest}>add</button>
+                </div>
+
+                <div className="interest-list">
+                  {interests.map((item, index) => (
+                    <div key={index} className="interest-tag">
+                      <span>{item}</span>
+                      <button onClick={() => removeInterest(index)}>
+                        x
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="panel pink-panel">
+                <p className="panel-title">aura memory</p>
+
+                <p>
+                  Aura remembers your cultural identity and adapts future generations based on your emotional and aesthetic patterns.
+                </p>
+              </div>
+
+              <div className="button-row">
+                <button
+                  className="generate-btn"
+                  onClick={generateBriefing}
+                  disabled={interests.length < 3 || loading}
+                >
+                  {loading ? 'reading your vibe...' : 'generate briefing'}
+                </button>
+
+                <button className="reset-btn" onClick={clearAura}>
+                  reset aura
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <div className="terminal">
+                <div className="terminal-title">
+                  AURA PERSONALITY TERMINAL v1.3
+                </div>
+
+                {briefing ? (
+                  <div>{briefing}</div>
+                ) : (
+                  <div className="placeholder">
+                    {'>'} waiting for cultural input...
+                    <br />
+                    <br />
+                    example profile:
+                    <br />- arcane
+                    <br />- mitski
+                    <br />- san francisco giants
+                    <br />- jerma985
+                    <br />- rosalía
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="feature-grid">
+          <div className="feature-card">
+            <h3>memory layer</h3>
+            <p>
+              Aura stores your cultural preferences locally and adapts future generations.
+            </p>
+          </div>
+
+          <div className="feature-card">
+            <h3>identity modeling</h3>
+            <p>
+              The AI identifies emotional and aesthetic patterns across fandoms and media.
+            </p>
+          </div>
+
+          <div className="feature-card">
+            <h3>proactive personalization</h3>
+            <p>
+              Daily briefings evolve as the user's taste profile changes over time.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
 
-async function callAI(input, apiKey) {
-  const prompt = `You are an AI that creates deeply personal, culturally rich era moodboards. The user has typed: "${input}"
-
-Extract the subject (artist, album, show, game, team, era, vibe) and generate a rich moodboard profile.
-
-Respond ONLY with a valid JSON object, no markdown, no backticks, exactly this shape:
-{
-  "subject": "Harry Styles - Harry's House",
-  "era": "Harry's House Era",
-  "years": "2022",
-  "palette": {
-    "primary": "#e8d5b7",
-    "secondary": "#8b6f5a",
-    "accent": "#c4956a",
-    "dark": "#2a1f1a",
-    "light": "#f5ede0",
-    "names": ["Linen", "Warm Walnut", "Honey Gold", "Espresso", "Ivory"]
-  },
-  "aesthetic": "cottagecore maximalism meets 70s pop warmth — sunlit rooms, worn-in comfort, vintage clutter with intention",
-  "poem": "Four lines of evocative poetry that captures the emotional essence of this era. Make it beautiful and specific.",
-  "keywords": ["cozy", "nostalgic", "warm", "domestic", "tender", "indie pop", "70s revival"],
-  "font": "serif",
-  "imageQueries": [
-    "Harry Styles Harry's House album 2022",
-    "cottagecore aesthetic warm tones interior",
-    "vintage 70s warm living room aesthetic",
-    "sunlit kitchen botanical aesthetic",
-    "warm honey golden hour photography aesthetic"
-  ],
-  "tracklistMoods": [
-    { "track": "Music For a Sushi Restaurant", "mood": "playful opener", "color": "#e8956a" },
-    { "track": "Late Night Talking", "mood": "giddy 3am energy", "color": "#f4c892" },
-    { "track": "Grapejuice", "mood": "wistful and golden", "color": "#c4956a" },
-    { "track": "As It Was", "mood": "bittersweet anthem", "color": "#8b9bb4" },
-    { "track": "Daylight", "mood": "morning optimism", "color": "#f0d4a0" }
-  ],
-  "vibeCheck": "This era is for people who make their bed with fresh lavender, have a favorite mug, and know that comfort can be radical.",
-  "recommendedArtists": [
-    { "name": "Benee", "reason": "same warm indie pop softness" },
-    { "name": "Phoebe Bridgers", "reason": "emotional vulnerability with gorgeous production" },
-    { "name": "Rex Orange County", "reason": "sunny bedroom pop with real heart" },
-    { "name": "Clairo", "reason": "intimate, domestic, quietly profound" },
-    { "name": "Steve Lacy", "reason": "70s-inflected genre-bending cool" }
-  ],
-  "fanArchetype": "The Tender Maximalist — you collect things that matter, you cry at chord progressions, you make places feel like home"
-}
-
-Be specific to the actual subject. If it's a sports team, adapt accordingly (replace tracks with key moments/games, replace artists with similar team vibes). If it's a video game, adapt for that world.`
-
-  const res = await fetch(`https://openrouter.ai/api/v1/chat/completions`, {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'meta-llama/llama-3.3-70b-instruct:free',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 2000,
-    })
-  })
-
-  if (!res.ok) {
-    const err = await res.json()
-    throw new Error(`AI error: ${err.error?.message || res.status}`)
-  }
-
-  const data = await res.json()
-  const text = data.choices?.[0]?.message?.content || ''
-  const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-
-  try {
-    return JSON.parse(cleaned)
-  } catch {
-    const match = cleaned.match(/\{[\s\S]*\}/)
-    if (match) return JSON.parse(match[0])
-    throw new Error('Could not parse AI response')
-  }
-}
-
-async function searchImages(queries, unsplashKey) {
-  const results = []
-  const toSearch = queries?.slice(0, 5) || []
-
-  for (const query of toSearch) {
-    try {
-      const res = await fetch(
-        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=4&orientation=landscape`,
-        { headers: { Authorization: `Client-ID ${unsplashKey}` } }
-      )
-      if (!res.ok) continue
-      const data = await res.json()
-      data.results?.forEach(photo => {
-        results.push({
-          url: photo.urls.regular,
-          thumb: photo.urls.small,
-          title: photo.alt_description || query,
-          query,
-        })
-      })
-    } catch {}
-  }
-
-  return results.slice(0, 18)
-}
